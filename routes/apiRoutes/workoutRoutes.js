@@ -1,53 +1,70 @@
 const router = require('express').Router();
-const workout = require('../../models/Workout');
+const Workout = require('../../models/Workout');
 
 
-router.get('/',async (req,res)=>{
-    try{    
-    const allWorkouts = await Workout.find().sort({$natural:-1}).limit(1);
-    
-    res.status(200).json(allWorkouts)
-    }catch(err){
+router.get('/', async (req, res) => {
+    try {
+        const allWorkouts = await Workout.aggregate([{
+            $addFields:{
+                totalDuration:{
+                    $sum:'$exercises.duration'
+                }
+            }
+        }])
+
+        res.status(200).json(allWorkouts)
+    } catch (err) {
         res.status(500).json(err);
     }
-    
+
 
 });
 
 
-router.put('/',async (req,res)=>{
-    try{
-    const allWorkouts = await Workout.update({
-    
-    });
-    res.status(200).json(allWorkouts)
-}catch(err){
-    console.log(err)
-    res.status(500).json(err);
-}
+router.put('/:id', async (req, res) => {
+    try {
+        const updateWorkout = await Workout.update({ where: { _id: req.params.id } }, {
+            $push: {
+                exercises: req.body
+            }
+        });
+        res.status(200).json(updateWorkout)
+    } catch (err) {
+        console.log(err)
+        res.status(500).json(err);
+    }
 
 });
 
-router.post('/',async (req,res)=>{
-    try{
+router.post('/', async (req, res) => {
+    try {
 
-    const allWorkouts = await Workout.create( req.body    
-    );
-    res.status(200).json(allWorkouts)
-    }catch(err){
+        const newWorkout = await Workout.create(req.body
+        );
+        res.status(200).json(newWorkout)
+    } catch (err) {
         res.status(500).json(err)
     }
 })
 
 
 
-router.get('/',async (req,res)=>{
-    const allWorkouts = await Workout.find({
-    
-    });
-    res.status(200).json(allWorkouts)
-    
+router.get('/range', async (req, res) => {
+    try {
+        const allWorkouts = await Workout.aggregate([{
+            $addFields:{
+                totalDuration:{
+                    $sum:'$exercises.duration'
+                }
+            }
+        }]).sort({
+            _id: -1
+        }).limit(7)
 
+        res.status(200).json(allWorkouts)
+    } catch (err) {
+        res.status(500).json(err);
+    }
 });
 
 
