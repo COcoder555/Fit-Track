@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
     try {
-        const updateWorkout = await Workout.update({ where: { _id: req.params.id } }, {
+        const updateWorkout = await Workout.findByIdAndUpdate(req.params.id, {
             $push: {
                 exercises: req.body
             }
